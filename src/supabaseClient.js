@@ -11,5 +11,14 @@ export const CATEGORY_LABELS = {
   design: "Design Graphique",
   uiux: "UI/UX Design",
   dev: "Développement",
+  video: "Vidéo & Montage",
   ia: "IA & Automatisation",
+};
+
+export const CATEGORY_LABELS_EN = {
+  design: "Graphic Design",
+  uiux: "UI/UX Design",
+  dev: "Development",
+  video: "Video & Editing",
+  ia: "AI & Automation",
 };

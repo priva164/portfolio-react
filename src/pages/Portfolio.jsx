@@ -8,14 +8,23 @@ import { supabase, isSupabaseConfigured } from "../supabaseClient.js";
 export default function Portfolio() {
   const [profile, setProfile] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [lang, setLang] = useState("fr");
+  const [darkMode, setDarkMode] = useState(true);
   const [error, setError] = useState(null);
+
+  // Apply dark/light mode to <html>
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
     async function load() {
-      const { data: profileData } = await supabase.from("profile").select("*").limit(1).maybeSingle();
+      const { data: profileData } = await supabase
+        .from("profile").select("*").limit(1).maybeSingle();
       setProfile(profileData);
 
       const { data: projectsData, error: projectsError } = await supabase
@@ -25,10 +34,21 @@ export default function Portfolio() {
         .order("created_at", { ascending: false });
 
       if (projectsError) {
-        setError("Impossible de charger les projets. Vérifie ta configuration Supabase.");
+        setError(
+          lang === "en"
+            ? "Unable to load projects. Check your Supabase configuration."
+            : "Impossible de charger les projets. Vérifie ta configuration Supabase."
+        );
         return;
       }
       setProjects(projectsData || []);
+
+      const { data: videosData } = await supabase
+        .from("videos")
+        .select("*")
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: false });
+      setVideos(videosData || []);
     }
 
     load();
@@ -45,16 +65,28 @@ export default function Portfolio() {
 
   return (
     <>
-      <Header activeCategory={activeCategory} onSelectCategory={setActiveCategory} />
+      <Header
+        activeCategory={activeCategory}
+        onSelectCategory={setActiveCategory}
+        lang={lang}
+        onToggleLang={() => setLang((l) => (l === "fr" ? "en" : "fr"))}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode((d) => !d)}
+      />
       <main className="wrap">
-        <Hero profile={profile} />
+        <Hero profile={profile} lang={lang} />
         {error ? (
           <div className="empty-state">{error}</div>
         ) : (
-          <ProjectsGrid projects={projects} activeCategory={activeCategory} />
+          <ProjectsGrid
+            projects={projects}
+            videos={videos}
+            activeCategory={activeCategory}
+            lang={lang}
+          />
         )}
       </main>
-      <Footer />
+      <Footer lang={lang} />
     </>
   );
 }
