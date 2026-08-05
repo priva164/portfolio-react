@@ -185,9 +185,31 @@ footer a:hover { color:var(--violet); }
   .hero-left { flex-direction:column; align-items:flex-start; }
   .hero-photo { width:120px; height:120px; }
   .layer-stack { height:300px; margin-top:20px; }
-  .nav-cats { display:none; }
   .lb-prev { left:-12px; }
   .lb-next { right:-12px; }
+
+  /* Nav: stack logo+controls on top, pills scroll below */
+  .nav-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 0;
+  }
+  .nav-cats {
+    display: flex;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-bottom: 4px;
+    /* hide scrollbar but keep scrollable */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .nav-cats::-webkit-scrollbar { display: none; }
+  .cat-pill { flex-shrink: 0; }
+  .nav-controls { order: 2; margin-left: auto; }
+  .logo { order: 1; }
 }
 
 /* ── Config warning ── */
