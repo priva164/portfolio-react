@@ -32,9 +32,69 @@ function Lightbox({ images, startIndex, onClose }) {
   );
 }
 
+/* ─── Gallery Modal ─────────────────────────────────────── */
+function GalleryModal({ project, onClose }) {
+  const [lightboxIdx, setLightboxIdx] = useState(null);
+
+  const allImages = [
+    ...(project.image_url ? [project.image_url] : []),
+    ...((project.images || []).filter((u) => u && u !== project.image_url)),
+  ];
+
+  function handleKey(e) {
+    if (e.key === "Escape" && lightboxIdx === null) onClose();
+  }
+
+  return (
+    <div className="gallery-overlay" onClick={onClose} onKeyDown={handleKey} tabIndex={0} autoFocus>
+      <div className="gallery-container" onClick={(e) => e.stopPropagation()}>
+        <div className="gallery-header">
+          <div className="gallery-title-wrap">
+            <span className="gallery-cat mono">
+              {CATEGORY_LABELS[project.category] || project.category}
+            </span>
+            <h2 className="gallery-title">{project.title}</h2>
+          </div>
+          <button className="gallery-close" onClick={onClose}>✕</button>
+        </div>
+
+        {project.description && (
+          <p className="gallery-desc">{project.description}</p>
+        )}
+
+        {project.project_link && (
+          <a className="gallery-link" href={project.project_link} target="_blank" rel="noopener noreferrer">
+            Voir le projet →
+          </a>
+        )}
+
+        <div className="gallery-grid">
+          {allImages.map((url, i) => (
+            <div
+              key={i}
+              className="gallery-item"
+              onClick={() => setLightboxIdx(i)}
+            >
+              <img src={url} alt={`${project.title} - ${i + 1}`} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {lightboxIdx !== null && (
+        <Lightbox
+          images={allImages}
+          startIndex={lightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+        />
+      )}
+    </div>
+  );
+}
+
 /* ─── Project Card ──────────────────────────────────────── */
 function ProjectCard({ project, lang }) {
-  const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [showGallery, setShowGallery] = useState(false);
   const [carouselIdx, setCarouselIdx] = useState(0);
 
   // Build full images list: merge image_url + images[]
@@ -45,8 +105,8 @@ function ProjectCard({ project, lang }) {
 
   const hasImages = allImages.length > 0;
   const labels = lang === "en"
-    ? { see: "View project →" }
-    : { see: "Voir le projet →" };
+    ? { see: "View project →", viewGallery: `${allImages.length} photos` }
+    : { see: "Voir le projet →", viewGallery: `${allImages.length} photos` };
 
   function prevImg(e) {
     e.stopPropagation();
@@ -62,7 +122,7 @@ function ProjectCard({ project, lang }) {
       <div className="project-card">
         <div
           className="project-img-wrap"
-          onClick={() => hasImages && setLightboxIdx(carouselIdx)}
+          onClick={() => hasImages && setShowGallery(true)}
           style={{ cursor: hasImages ? "zoom-in" : "default" }}
         >
           {hasImages ? (
@@ -104,19 +164,25 @@ function ProjectCard({ project, lang }) {
           {project.description && (
             <p className="project-desc">{project.description}</p>
           )}
-          {project.project_link && (
-            <a className="project-link" href={project.project_link} target="_blank" rel="noopener noreferrer">
-              {labels.see}
-            </a>
-          )}
+          <div className="project-footer">
+            {hasImages && allImages.length > 1 && (
+              <button className="project-gallery-btn" onClick={() => setShowGallery(true)}>
+                🖼 {labels.viewGallery}
+              </button>
+            )}
+            {project.project_link && (
+              <a className="project-link" href={project.project_link} target="_blank" rel="noopener noreferrer">
+                {labels.see}
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
-      {lightboxIdx !== null && (
-        <Lightbox
-          images={allImages}
-          startIndex={lightboxIdx}
-          onClose={() => setLightboxIdx(null)}
+      {showGallery && (
+        <GalleryModal
+          project={project}
+          onClose={() => setShowGallery(false)}
         />
       )}
     </>
