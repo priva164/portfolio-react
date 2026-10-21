@@ -143,7 +143,8 @@ function useSession() {
 
 /* ─── Upload helpers ─────────────────────────────────────── */
 async function uploadFile(file, folder) {
-  const ext = file.name.split(".").pop();
+  // Blob from crop won't have a .name — default to jpg
+  const ext = file.name ? file.name.split(".").pop() : "jpg";
   const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await supabase.storage.from("portfolio").upload(path, file);
   if (error) throw error;
